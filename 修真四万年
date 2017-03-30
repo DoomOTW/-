@@ -1,0 +1,39 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Mar 09 16:55:36 2017
+
+@author: yr
+"""
+import requests
+from bs4 import BeautifulSoup
+import codecs
+
+#读取目录页url和data
+cont = requests.get('http://www.biqudao.com/bqge7946/')
+cont.encoding = 'utf-8'
+cont = cont.text
+page = BeautifulSoup(cont)
+
+#获取小说文本信息
+pages = page.select('a[style]')
+links=[]
+for p in pages:
+    url = 'http://www.biqudao.com'+p['href']
+    name = u':'.join(p.text.split())
+    chapter = [url,name]
+    links.append(chapter)
+novel=u''
+for link in links:
+    response = requests.get(link[0])
+    response.encoding = 'utf-8'
+    response = response.text
+    soup = BeautifulSoup(response)
+    content = soup.select('#content')[0].get_text()
+    content=link[1]+content[:-16]
+    novel = novel+content
+    novel=u'\n\t'.join(novel.split())
+    
+#保存
+txt = codecs.open(u'修真四万年.txt','wb','utf-8')
+txt.write(novel)
+txt.close()
